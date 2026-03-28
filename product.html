@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置器 | 极客键盘定制系统</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Oswald:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { neon: '#ff00e1', purple: '#b53cff', dark: '#050505', surface: '#111111' },
+                    fontFamily: { mono: ['"JetBrains Mono"'], heading: ['"Oswald"'], sans: ['"Inter"'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        body { background-color: #050505; color: #ffffff; overflow: hidden; }
+        .bg-noise { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E"); }
+        
+        .viewport-grid {
+            background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(1000px) rotateX(60deg) scale(2);
+            transform-origin: top center;
+        }
+        
+        .scanner-beam { 
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to bottom, transparent, var(--theme-color, #ff00e1), transparent); 
+            opacity: 0;
+            z-index: 40;
+            pointer-events: none;
+        }
+
+        .scanning .scanner-beam {
+            animation: scanVertical 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes scanVertical {
+            0% { top: -20%; opacity: 0; }
+            30% { opacity: 0.8; }
+            70% { opacity: 0.8; }
+            100% { top: 120%; opacity: 0; }
+        }
+
+        #keyboard-preview-container {
+            transition: border-color 0.6s ease, box-shadow 0.6s ease;
+        }
+        
+        #color-overlay {
+            mix-blend-mode: color; 
+            transition: background-color 0.8s ease;
+            pointer-events: none;
+        }
+
+        #keyboard-img {
+            transition: opacity 0.5s ease, filter 0.8s ease;
+        }
+
+        .cursor-blink::after { content: '_'; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .modal-bg {
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .modal-bg.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-box {
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-bg.active .modal-box {
+            transform: scale(1) translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-noise h-screen flex flex-col" style="--theme-color: #ff00e1;">
+
+    <nav class="fixed top-0 left-0 w-full z-50 border-b border-white/5 bg-dark/70 backdrop-blur-xl h-20 shrink-0">
+        <div class="max-w-screen-2xl mx-auto px-6 h-full flex items-center justify-between">
+            <a href="index.html" class="font-heading text-3xl tracking-widest font-bold text-white flex items-center gap-2">
+                KEY<span class="text-neon transition-colors duration-500" id="logo-neon">CRAFT</span>
+            </a>
+            <div class="hidden md:flex gap-10 font-mono text-sm text-gray-400 items-center">
+                <a href="index.html" class="hover:text-white transition-colors">首页 [索引]</a>
+                <a href="product.html" class="text-neon relative transition-colors duration-500 after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[1px] after:bg-current" id="nav-custom">定制 [自定义]</a>
+                <a href="tech.html" class="hover:text-white transition-colors">技术 [解构]</a>
+                <a href="about.html" class="hover:text-white transition-colors">关于 [我们]</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col lg:flex-row mt-20 h-[calc(100vh-5rem)]">
+        <!-- 渲染预览区 -->
+        <section class="relative flex-1 bg-dark overflow-hidden flex flex-col items-center justify-center p-8">
+            <div class="absolute inset-0 viewport-grid pointer-events-none opacity-30"></div>
+            
+            <div id="keyboard-preview-container" class="relative w-full max-w-4xl aspect-[16/10] border border-neon/20 bg-black/40 backdrop-blur-sm flex items-center justify-center group shadow-[0_0_60px_rgba(255,0,225,0.1)] overflow-hidden rounded-xl">
+                <div class="scanner-beam"></div>
+                <img id="keyboard-img" src="11.png" alt="[键盘预览]" 
+                     class="w-full h-full object-cover relative z-10 brightness-110 contrast-105 transition-all duration-700" 
+                     style="filter: drop-shadow(0 0 20px rgba(255,0,225,0.2));">
+                <div id="color-overlay" class="absolute inset-0 z-20 opacity-20 bg-neon"></div>
+                
+                <div class="absolute top-4 left-4 font-mono text-[9px] text-white/30 tracking-widest z-40 uppercase">
+                    实时渲染激活 // 高保真预览
+                </div>
+            </div>
+
+            <div class="absolute bottom-6 flex gap-8 font-mono text-[9px] text-gray-500 uppercase tracking-widest">
+                <span>渲染引擎：就绪</span>
+                <span>环境光联动：已开启</span>
+            </div>
+        </section>
+
+        <!-- 控制面板 -->
+        <section class="w-full lg:w-[450px] bg-surface border-l border-white/10 flex flex-col relative shrink-0 shadow-2xl h-full">
+            <!-- 终端日志 -->
+            <div class="h-40 bg-[#020202] border-b border-white/10 p-5 font-mono text-xs relative">
+                <div class="text-gray-500 mb-2 flex justify-between items-center">
+                    <span>系统日志 (SYSTEM.LOG)</span>
+                    <span class="text-neon float-right" id="version-tag">v2.4.1</span>
+                </div>
+                <div id="terminal-content" class="text-green-400 cursor-blink leading-relaxed">正在初始化构建配置...</div>
+            </div>
+
+            <!-- 模块选项卡 -->
+            <div class="flex border-b border-white/10 font-heading text-sm uppercase tracking-widest bg-surface">
+                <button class="config-tab flex-1 py-4 text-neon border-b-2 border-neon" data-target="switches">轴体</button>
+                <button class="config-tab flex-1 py-4 text-gray-500 border-b-2 border-transparent" data-target="keycaps">键帽</button>
+                <button class="config-tab flex-1 py-4 text-gray-500 border-b-2 border-transparent" data-target="lighting">灯效</button>
+            </div>
+
+            <!-- 选项滚动区 -->
+            <div class="flex-1 overflow-y-auto p-6 relative">
+                <!-- 面板：轴体 -->
+                <div id="panel-switches" class="config-panel grid grid-cols-2 gap-4">
+                    <button class="option-btn switch-btn text-left bg-dark border border-neon rounded p-4" 
+                            data-img="12.png" data-price="500" data-name="红轴"
+                            data-log="已选轴体：红轴\n特性：线性、轻盈">
+                        <h4 class="font-heading text-lg text-white uppercase">红轴</h4>
+                        <p class="font-mono text-[10px] text-gray-500">线性 • 45g</p>
+                    </button>
+                    <button class="option-btn switch-btn text-left bg-dark border border-white/10 rounded p-4" 
+                            data-img="14.png" data-price="600" data-name="青轴"
+                            data-log="已选轴体：青轴\n特性：段落、清脆">
+                        <h4 class="font-heading text-lg text-white uppercase">青轴</h4>
+                        <p class="font-mono text-[10px] text-gray-500">段落 • 60g</p>
+                    </button>
+                    <button class="option-btn switch-btn text-left bg-dark border border-white/10 rounded p-4" 
+                            data-img="13.png" data-price="700" data-name="茶轴"
+                            data-log="已选轴体：茶轴\n特性：微段落、平衡">
+                        <h4 class="font-heading text-lg text-white uppercase">茶轴</h4>
+                        <p class="font-mono text-[10px] text-gray-500">混合 • 55g</p>
+                    </button>
+                    <button class="option-btn switch-btn text-left bg-dark border border-white/10 rounded p-4" 
+                            data-img="15.png" data-price="800" data-name="黑轴"
+                            data-log="已选轴体：黑轴\n特性：重线性、潜行">
+                        <h4 class="font-heading text-lg text-white uppercase">黑轴</h4>
+                        <p class="font-mono text-[10px] text-gray-500">重线性 • 60g</p>
+                    </button>
+                </div>
+
+                <!-- 面板：键帽 -->
+                <div id="panel-keycaps" class="config-panel hidden grid grid-cols-2 gap-4">
+                    <button class="option-btn keycap-btn text-left bg-dark border border-white/10 rounded p-4" 
+                            data-img="7.png" data-price="800" data-name="高达"
+                            data-log="载入纹理：高达联名款">
+                        <h4 class="font-heading text-lg text-white uppercase">高达</h4>
+                        <p class="font-mono text-[10px] text-gray-500">PBT • 机甲风格</p>
+                    </button>
+                    <button class="option-btn keycap-btn text-left bg-dark border border-white/10 rounded p-4" 
+                            data-img="10.png" data-price="700" data-name="二次元"
+                            data-log="载入纹理：二次元萌系">
+                        <h4 class="font-heading text-lg text-white uppercase">二次元</h4>
+                        <p class="font-mono text-[10px] text-gray-500">ACG • 多色热升华</p>
+                    </button>
+                    <button class="option-btn keycap-btn text-left bg-dark border border-white/10 rounded p-4" 
+                            data-img="8.png" data-price="580" data-name="透明"
+                            data-log="载入纹理：极致透明">
+                        <h4 class="font-heading text-lg text-white uppercase">透明</h4>
+                        <p class="font-mono text-[10px] text-gray-500">PC • 极致通透</p>
+                    </button>
+                    <button class="option-btn keycap-btn text-left bg-dark border border-white/10 rounded p-4" 
+                            data-img="9.png" data-price="400" data-name="侧透"
+                            data-log="载入纹理：侧透隐形">
+                        <h4 class="font-heading text-lg text-white uppercase">侧透</h4>
+                        <p class="font-mono text-[10px] text-gray-500">ABS • 侧刻发光</p>
+                    </button>
+                </div>
+
+                <!-- 面板：灯效 -->
+                <div id="panel-lighting" class="config-panel hidden flex flex-col gap-4">
+                    <div class="font-mono text-[10px] text-gray-500 uppercase mb-2">RGB 视觉预设方案</div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button class="color-btn h-12 rounded bg-[#ff00e1] border-2 border-white" data-color="#ff00e1" data-rgb="255, 0, 225" data-name="赛博粉"></button>
+                        <button class="color-btn h-12 rounded bg-[#b53cff] border-2 border-transparent" data-color="#b53cff" data-rgb="181, 60, 255" data-name="极客紫"></button>
+                        <button class="color-btn h-12 rounded bg-[#ff003c] border-2 border-transparent" data-color="#ff003c" data-rgb="255, 0, 60" data-name="机甲红"></button>
+                        <button class="color-btn h-12 rounded bg-white border-2 border-transparent" data-color="#ffffff" data-rgb="255, 255, 255" data-name="纯净白"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 结算 -->
+            <div class="h-24 bg-dark border-t border-white/10 p-5 flex items-center justify-between shrink-0">
+                <div>
+                    <div class="font-mono text-[10px] text-gray-500 uppercase">当前配置估价 (含组装费)</div>
+                    <div id="total-price" class="font-heading text-2xl text-white tracking-wide">¥ 2,299.00</div>
+                </div>
+                <!-- 更新按钮文案为：现在制作 -->
+                <button id="pay-btn" class="bg-neon text-dark font-mono font-bold px-6 py-3 hover:bg-white transition-all uppercase text-sm">现在制作</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- 客服联系对话框 -->
+    <div id="payment-modal" class="modal-bg fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6">
+        <div class="modal-box bg-surface border border-neon/30 w-full max-w-sm p-8 rounded-lg shadow-[0_0_50px_rgba(255,0,225,0.2)] relative text-center">
+            <button id="close-payment" class="absolute top-4 right-4 text-gray-500 hover:text-neon transition-colors">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <!-- 更新标题为：添加客服 -->
+            <h3 class="font-heading text-2xl font-bold text-white uppercase tracking-widest mb-6">添加客服 // CONTACT</h3>
+            <img src="微信图片_20260327204615_64_66.png" alt="Contact" class="w-full h-auto rounded border border-white/10 mb-4">
+            <p class="font-mono text-[10px] text-gray-400 uppercase tracking-widest">请扫描二维码添加专属客服<br>完成定制协议</p>
+            <p id="modal-final-price" class="mt-4 font-heading text-neon text-xl tracking-wider">ESTIMATE: ¥ 2,299.00</p>
+        </div>
+    </div>
+
+    <script>
+        // 配置状态初始化
+        let selectedSwitchPrice = 500;
+        let selectedKeycapPrice = 800;
+        const assemblyFee = 999;
+
+        function updateTerminal(text) {
+            const terminal = document.getElementById('terminal-content');
+            if (!terminal) return;
+            terminal.innerHTML = '> ';
+            let i = 0;
+            const textToType = text.replace(/\\n/g, '<br>> ');
+            function typeWriter() {
+                if (i < textToType.length) {
+                    if (textToType.slice(i, i + 4) === '<br>') {
+                        terminal.innerHTML += '<br>> ';
+                        i += 4;
+                    } else {
+                        terminal.innerHTML += textToType.charAt(i);
+                        i++;
+                    }
+                    setTimeout(typeWriter, 10);
+                }
+            }
+            typeWriter();
+        }
+
+        // 计算总额
+        function calculateTotal() {
+            const total = selectedSwitchPrice + selectedKeycapPrice + assemblyFee;
+            const formattedTotal = `¥ ${total.toLocaleString('zh-CN', {minimumFractionDigits: 2})}`;
+            document.getElementById('total-price').innerText = formattedTotal;
+            document.getElementById('modal-final-price').innerText = `ESTIMATE: ${formattedTotal}`;
+        }
+
+        function switchPreviewImage(newImgPath) {
+            const imgElement = document.getElementById('keyboard-img');
+            if (imgElement.src.includes(newImgPath)) return true;
+            imgElement.style.opacity = '0';
+            setTimeout(() => {
+                imgElement.src = newImgPath;
+                imgElement.style.opacity = '1';
+            }, 400);
+            return true;
+        }
+
+        // 轴体点击
+        document.querySelectorAll('.switch-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const newImg = this.getAttribute('data-img');
+                const price = parseInt(this.getAttribute('data-price'));
+                selectedSwitchPrice = price;
+                if(newImg) switchPreviewImage(newImg);
+                calculateTotal();
+            });
+        });
+
+        // 键帽点击
+        document.querySelectorAll('.keycap-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const newImg = this.getAttribute('data-img');
+                const price = parseInt(this.getAttribute('data-price'));
+                selectedKeycapPrice = price;
+                if(newImg) switchPreviewImage(newImg);
+                calculateTotal();
+            });
+        });
+
+        // 灯效色彩控制
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const color = this.getAttribute('data-color');
+                const rgb = this.getAttribute('data-rgb');
+                const name = this.getAttribute('data-name');
+                const container = document.getElementById('keyboard-preview-container');
+
+                switchPreviewImage('11.png');
+
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('border-white'));
+                this.classList.add('border-white');
+
+                document.body.style.setProperty('--theme-color', color);
+                document.getElementById('color-overlay').style.backgroundColor = color;
+                document.getElementById('keyboard-img').style.filter = `drop-shadow(0 0 30px rgba(${rgb}, 0.4)) brightness(1.1)`;
+                
+                container.classList.remove('scanning');
+                void container.offsetWidth; 
+                container.classList.add('scanning');
+
+                document.getElementById('logo-neon').style.color = color;
+                document.getElementById('nav-custom').style.color = color;
+                document.getElementById('version-tag').style.color = color;
+
+                updateTerminal(`色彩协议重组中...\\n方案：[${name}]\\n预览已切回全局模式。`);
+            });
+        });
+
+        // 选项卡切换
+        document.querySelectorAll('.config-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = 'panel-' + tab.dataset.target;
+                document.querySelectorAll('.config-tab').forEach(t => {
+                    t.classList.remove('text-neon', 'border-neon');
+                    t.classList.add('text-gray-500', 'border-transparent');
+                });
+                tab.classList.add('text-neon', 'border-neon');
+                tab.classList.remove('text-gray-500', 'border-transparent');
+                document.querySelectorAll('.config-panel').forEach(p => p.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+                updateTerminal('切换视图：' + (tab.dataset.target).toUpperCase());
+            });
+        });
+
+        // 通用按钮样式
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const panel = this.closest('.config-panel');
+                panel.querySelectorAll('.option-btn').forEach(b => {
+                    b.classList.remove('border-neon');
+                    b.classList.add('border-white/10');
+                });
+                this.classList.add('border-neon');
+                this.classList.remove('border-white/10');
+                updateTerminal(this.getAttribute('data-log') || '参数已同步');
+            });
+        });
+
+        // 弹窗处理
+        const payBtn = document.getElementById('pay-btn');
+        const paymentModal = document.getElementById('payment-modal');
+        payBtn.addEventListener('click', () => {
+            paymentModal.classList.add('active');
+            updateTerminal("正在建立客服加密链路...\\n请手动扫描二维码获取定制细节。");
+        });
+        document.getElementById('close-payment').addEventListener('click', () => paymentModal.classList.remove('active'));
+
+        window.onload = () => {
+            calculateTotal();
+            setTimeout(() => updateTerminal("系统初始化完成。\\n待命状态..."), 500);
+        };
+    </script>
+</body>
+</html>

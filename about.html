@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们 | KEYCRAFT 品牌精神</title>
+    
+    <!-- 引入极具视觉冲击力的字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { neon: '#00f3ff', purple: '#b53cff', dark: '#050505', surface: '#111111' },
+                    fontFamily: { mono: ['"JetBrains Mono"'], heading: ['"Oswald"'], sans: ['"Inter"', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        body { background-color: #050505; color: #ffffff; overflow-x: hidden; }
+        
+        /* 胶片感噪点背景 */
+        .bg-noise {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+        }
+
+        /* 文字揭示遮罩 */
+        .reveal-container { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+
+        /* 霓虹流光边框卡片 */
+        .neon-border-card {
+            position: relative;
+            background: #0a0a0a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .neon-border-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, #00f3ff);
+            animation: rotate-neon 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .neon-border-card:hover::before { opacity: 1; }
+        .neon-border-card::after {
+            content: '';
+            position: absolute;
+            inset: 1px;
+            background: #0a0a0a;
+            border-radius: 3px;
+            z-index: 1;
+        }
+        .card-inner { position: relative; z-index: 2; }
+
+        @keyframes rotate-neon {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 磁吸按钮容器 */
+        .magnetic-area { display: inline-block; padding: 40px; }
+    </style>
+</head>
+<body class="bg-noise selection:bg-neon selection:text-dark">
+
+    <!-- 全局导航栏 -->
+    <nav class="fixed top-0 left-0 w-full z-50 border-b border-white/5 bg-dark/80 backdrop-blur-xl h-20" id="navbar">
+        <div class="max-w-screen-2xl mx-auto px-6 h-full flex items-center justify-between">
+            <a href="index.html" class="font-heading text-3xl tracking-widest font-bold text-white uppercase">
+                KEY<span class="text-neon">CRAFT</span>
+            </a>
+            <div class="hidden md:flex gap-10 font-mono text-sm text-gray-400 items-center uppercase">
+                <a href="index.html" class="hover:text-white transition-colors">首页 [索引]</a>
+                <a href="product.html" class="hover:text-white transition-colors">定制 [自定义]</a>
+                <a href="tech.html" class="hover:text-white transition-colors">技术 [解构]</a>
+                <a href="about.html" class="text-neon border-b border-neon">关于 [我们]</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 01. 品牌首屏：超大排版与揭示动画 -->
+    <section class="min-h-screen flex flex-col justify-center px-6 md:px-20 pt-20">
+        <div class="max-w-screen-2xl mx-auto w-full">
+            <p class="font-mono text-neon text-[10px] tracking-[0.8em] mb-12 uppercase opacity-0" id="sub-philosophy">Philosophy // 品牌哲学</p>
+            
+            <div class="reveal-container mb-2">
+                <h1 class="font-heading text-[13vw] md:text-[10vw] leading-[0.85] font-bold uppercase tracking-tighter reveal-text">
+                    BORN FOR <span class="text-transparent" style="-webkit-text-stroke: 1px #fff;">GEEKS</span>
+                </h1>
+            </div>
+            <div class="reveal-container">
+                <h1 class="font-heading text-[13vw] md:text-[10vw] leading-[0.85] font-bold uppercase tracking-tighter reveal-text">
+                    CRAFTED BY <span class="text-neon">CODE</span>
+                </h1>
+            </div>
+
+            <div class="mt-20 max-w-3xl opacity-0 translate-y-10" id="hero-desc">
+                <p class="font-sans text-xl md:text-3xl text-gray-500 font-light leading-snug italic border-l-2 border-neon/30 pl-10">
+                    “每一块铝材的切削，每一行代码的注入，都是为了将虚幻的灵感转化为指尖真实的触感。”
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 02. 品牌内核：横向超大文字流 -->
+    <section class="py-48 bg-white text-dark overflow-hidden mix-blend-screen">
+        <div class="flex whitespace-nowrap font-heading text-[18vw] font-bold leading-none select-none tracking-tighter" id="marquee">
+            &nbsp;GEEK SPIRIT • NO COMPROMISE • CODE IS ART • 
+            GEEK SPIRIT • NO COMPROMISE • CODE IS ART • 
+        </div>
+    </section>
+
+    <!-- 03. 理念模块 -->
+    <section class="py-32 px-6 md:px-20 bg-dark relative z-10">
+        <div class="max-w-screen-2xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div class="neon-border-card p-12 min-h-[400px] flex flex-col justify-end group transition-all duration-500 hover:-translate-y-4">
+                <div class="card-inner">
+                    <span class="font-mono text-neon text-[10px] tracking-widest mb-6 block uppercase opacity-50 group-hover:opacity-100">01 / MATERIAL</span>
+                    <h3 class="font-heading text-4xl font-bold mb-6 uppercase tracking-tight">质感偏执</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed group-hover:text-gray-300">
+                        采用 6063 系列铝合金。每一台外壳都经历了 12 小时的 CNC 精密加工与阳极氧化处理，确保如玉般的温润触感。
+                    </p>
+                </div>
+            </div>
+            <div class="neon-border-card p-12 min-h-[400px] flex flex-col justify-end group transition-all duration-500 hover:-translate-y-4">
+                <div class="card-inner">
+                    <span class="font-mono text-neon text-[10px] tracking-widest mb-6 block uppercase opacity-50 group-hover:opacity-100">02 / PROTOCOL</span>
+                    <h3 class="font-heading text-4xl font-bold mb-6 uppercase tracking-tight">完全掌控</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed group-hover:text-gray-300">
+                        深度适配 QMK 与 VIA。每一颗按键、每一层逻辑、每一组灯效，都应完全遵循您的意志进行实时重编程。
+                    </p>
+                </div>
+            </div>
+            <div class="neon-border-card p-12 min-h-[400px] flex flex-col justify-end group transition-all duration-500 hover:-translate-y-4">
+                <div class="card-inner">
+                    <span class="font-mono text-neon text-[10px] tracking-widest mb-6 block uppercase opacity-50 group-hover:opacity-100">03 / AESTHETIC</span>
+                    <h3 class="font-heading text-4xl font-bold mb-6 uppercase tracking-tight">桌面演化</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed group-hover:text-gray-300">
+                        去除所有冗余。让键盘回归最纯粹的几何形态，使其不仅是一个生产力工具，更是您数字空间的艺术核心。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 04. 跳转定制：磁吸交互按钮 -->
+    <section class="py-64 bg-surface flex flex-col items-center justify-center text-center overflow-hidden border-t border-white/5">
+        <h3 class="font-heading text-4xl md:text-7xl font-bold mb-16 uppercase tracking-tighter px-6">
+            想要开始制作你的<br><span class="text-neon">专属键盘</span>了吗？
+        </h3>
+        
+        <div class="magnetic-area">
+            <div class="magnetic-target">
+                <!-- 点击跳转到 product.html -->
+                <a href="product.html" class="inline-block px-14 py-7 bg-white text-dark font-mono font-bold text-xl hover:bg-neon hover:shadow-[0_0_50px_rgba(0,243,255,0.8)] transition-all uppercase tracking-widest">
+                    现在开始制作！
+                </a>
+            </div>
+        </div>
+        
+        <p class="mt-12 font-mono text-[9px] text-gray-600 uppercase tracking-[0.8em] animate-pulse">
+            // STATUS: SYSTEM READY FOR NEW BUILD
+        </p>
+    </section>
+
+    <!-- 05. 页脚 -->
+    <footer class="bg-dark pt-24 pb-12 border-t border-white/5">
+        <div class="max-w-screen-2xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
+            <div class="md:col-span-2">
+                <div class="font-heading text-4xl font-bold text-white mb-8 tracking-widest">KEY<span class="text-neon">CRAFT</span></div>
+                <p class="text-gray-500 font-mono text-xs leading-loose max-w-sm uppercase">
+                    为极客而生，由代码铸就。<br>
+                    我们构建的是通往赛博空间的物理触点。
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="text-white font-bold mb-8 uppercase tracking-widest text-sm underline decoration-neon underline-offset-8">联系我们</h4>
+                <ul class="space-y-6 font-mono text-xs text-gray-500">
+                    <li class="flex flex-col gap-1">
+                        <span class="text-white opacity-40">[ 电话 / TEL ]</span>
+                        <a href="tel:+8602188886666" class="hover:text-neon transition-colors tracking-widest">+86 021-8888-6666</a>
+                    </li>
+                    <li class="flex flex-col gap-1">
+                        <span class="text-white opacity-40">[ 邮箱 / EMAIL ]</span>
+                        <a href="mailto:core@keycraft.io" class="hover:text-neon transition-colors tracking-widest">CORE@KEYCRAFT.IO</a>
+                    </li>
+                    <li class="flex flex-col gap-1">
+                        <span class="text-white opacity-40">[ 地址 / ADDR ]</span>
+                        <span class="leading-relaxed">上海市徐汇区赛博大道 1024 号<br>极客工坊 3F 核心实验室</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold mb-8 uppercase tracking-widest text-sm">导航</h4>
+                <ul class="space-y-4 font-mono text-xs text-gray-500 uppercase">
+                    <li><a href="index.html" class="hover:text-white transition-colors">产品首页</a></li>
+                    <li><a href="product.html" class="hover:text-white transition-colors">在线定制</a></li>
+                    <li><a href="tech.html" class="hover:text-white transition-colors">技术文档</a></li>
+                    <li><a href="about.html" class="text-neon">关于团队</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="max-w-screen-2xl mx-auto px-6 border-t border-white/5 pt-12 flex flex-col md:flex-row justify-between items-center gap-6 font-mono text-[9px] text-gray-700 uppercase tracking-[0.4em]">
+            <span>&copy; 2026 KEYCRAFT DESIGN LAB // ALL RIGHTS RESERVED</span>
+            <span>CRAFTED BY CODE // THE GEEK SYNDICATE</span>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        const lenis = new Lenis({ duration: 1.2 });
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => lenis.raf(time * 1000));
+        gsap.registerPlugin(ScrollTrigger);
+
+        const revealTl = gsap.timeline();
+        revealTl.to("#sub-philosophy", { opacity: 1, duration: 1, delay: 0.5 })
+                .from(".reveal-text", { y: 300, duration: 1.5, stagger: 0.2, ease: "power4.out" }, "-=0.5")
+                .to("#hero-desc", { opacity: 1, y: 0, duration: 1, ease: "power2.out" }, "-=0.5");
+
+        gsap.to("#marquee", {
+            xPercent: -50,
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#marquee",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1
+            }
+        });
+
+        const magneticTarget = document.querySelector('.magnetic-target');
+        const magneticArea = document.querySelector('.magnetic-area');
+
+        if (window.innerWidth > 768) {
+            magneticArea.addEventListener('mousemove', (e) => {
+                const rect = magneticArea.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                gsap.to(magneticTarget, {
+                    x: x * 0.5,
+                    y: y * 0.5,
+                    duration: 0.4,
+                    ease: "power3.out"
+                });
+            });
+
+            magneticArea.addEventListener('mouseleave', () => {
+                gsap.to(magneticTarget, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.6,
+                    ease: "elastic.out(1, 0.3)"
+                });
+            });
+        }
+
+        let lastScrollY = window.scrollY;
+        const navbar = document.getElementById('navbar');
+        lenis.on('scroll', () => {
+            const currentScrollY = window.scrollY;
+            navbar.style.transform = (currentScrollY > 100 && currentScrollY > lastScrollY) ? 'translateY(-100%)' : 'translateY(0)';
+            lastScrollY = currentScrollY;
+        });
+    </script>
+</body>
+</html>
